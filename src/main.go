@@ -29,7 +29,7 @@ type Room struct {
 }
 
 type NodeCreationWindowData struct {
-	Id string
+	Id    string
 	Color color.RGBA
 }
 
@@ -47,7 +47,7 @@ var nodeCreationDialogues []*NodeCreationWindowData // TODO: Polymorphism so tha
 var edgeCreationDialogues []*EdgeCreationWindowData
 
 func nodeCreationMenu(graph *w.DraggableGraphWidget) {
-	newNodeCreationDialogue := NodeCreationWindowData {
+	newNodeCreationDialogue := NodeCreationWindowData{
 		Color: color.RGBA{R: 255, G: 255, B: 255, A: 255},
 	}
 
@@ -81,7 +81,7 @@ func renderNodeCreationMenu(window *g.WindowWidget, windowData *NodeCreationWind
 }
 
 func edgeCreationMenu(graph *w.DraggableGraphWidget, from string, to string) {
-	newEdgeCreationDialogue := EdgeCreationWindowData {
+	newEdgeCreationDialogue := EdgeCreationWindowData{
 		Id:            "",
 		DirectionName: "",
 		From:          from,
@@ -143,18 +143,18 @@ func mainLoop() {
 	// Actually render our windows
 	/// Render sub-windows
 	//// Edge creation dialogue rendering
-	for i, windowData := range(edgeCreationDialogues) {
+	for i, windowData := range edgeCreationDialogues {
 		window := g.Window(windowData.From + " -> " + windowData.To)
 		window.Size(vX/5, vY/3)
-		window.Pos(oX + vX/2 - vX/10, oY + vY/2 - vY/6)
+		window.Pos(oX+vX/2-vX/10, oY+vY/2-vY/6)
 		renderEdgeCreationMenu(window, windowData, i, roomGraph, &manualUpdateNeeded)
 	}
 
 	//// Node creation dialogue rendering
-	for i, windowData := range(nodeCreationDialogues) {
+	for i, windowData := range nodeCreationDialogues {
 		window := g.Window("Node Creation")
 		window.Size(vX/4, vY/3)
-		window.Pos(oX + vX/2 - vX/8, oY + vY/2 - vY/6)
+		window.Pos(oX+vX/2-vX/8, oY+vY/2-vY/6)
 		graphCenter := roomGraph.GetOffset().Mul(-1).Add(image.Point{X: int(vX), Y: int(vY)}.Div(2))
 		renderNodeCreationMenu(window, windowData, i, roomGraph, graphCenter, &manualUpdateNeeded)
 	}

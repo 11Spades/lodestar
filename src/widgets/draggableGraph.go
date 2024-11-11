@@ -90,7 +90,7 @@ type DraggableGraphWidget struct {
 	zoom                 float32
 }
 
-func DraggableGraph(id string, offsetChanged func(image.Point), nodeCreationMenu func(*DraggableGraphWidget),  edgeCreationMenu func(*DraggableGraphWidget, string, string)) *DraggableGraphWidget {
+func DraggableGraph(id string, offsetChanged func(image.Point), nodeCreationMenu func(*DraggableGraphWidget), edgeCreationMenu func(*DraggableGraphWidget, string, string)) *DraggableGraphWidget {
 	return &DraggableGraphWidget{
 		id: id,
 		offset: image.Point{
