@@ -156,7 +156,7 @@ func mainLoop() {
 		window.Size(vX/4, vY/3)
 		window.Pos(oX+vX/2-vX/8, oY+vY/2-vY/6)
 		graphCenter := roomGraph.GetOffset().Mul(-1).Add(image.Point{X: int(vX), Y: int(vY)}.Div(2))
-		renderNodeCreationMenu(window, windowData, i, roomGraph, graphCenter, &manualUpdateNeeded)
+		renderNodeCreationMenu(window, windowData, i, graphCenter, &manualUpdateNeeded)
 	}
 
 	/// Render main window
