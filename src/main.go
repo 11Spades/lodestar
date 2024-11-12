@@ -54,7 +54,7 @@ func nodeCreationMenu(graph *w.DraggableGraphWidget) {
 	nodeCreationDialogues = append(nodeCreationDialogues, &newNodeCreationDialogue)
 }
 
-func renderNodeCreationMenu(window *g.WindowWidget, windowData *NodeCreationWindowData, windowDataIndex int, graph *w.DraggableGraphWidget, graphCenter image.Point, update *bool) {
+func renderNodeCreationMenu(window *g.WindowWidget, windowData *NodeCreationWindowData, windowDataIndex int, graphCenter image.Point, update *bool) {
 	window.Layout(
 		g.Column(
 			g.Row(
