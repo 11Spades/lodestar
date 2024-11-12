@@ -182,9 +182,6 @@ func main() {
 
 	// State-retained widgets
 	roomGraph = w.DraggableGraph("room_graph", dragged, nodeCreationMenu, edgeCreationMenu)
-	roomGraph.CreateNode("testnode1", image.Point{X: 500, Y: 500}, color.White, clicked, doubleClicked)
-	roomGraph.CreateNode("testnode2", image.Point{X: 400, Y: 400}, color.White, clicked, doubleClicked)
-	roomGraph.CreateEdge("testedge1", "testnode1", "testnode2")
 
 	// GO! GO! GO! //
 	mainPane.Run(mainLoop)
