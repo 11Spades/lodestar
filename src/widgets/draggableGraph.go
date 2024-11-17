@@ -16,7 +16,7 @@ func isPointInRect(p image.Point, min image.Point, max image.Point) bool {
 	return false
 }
 
-func findNodeUnderCursor(mouse image.Point, nodes []*GraphNodeWidget, nodeSize image.Point, offset image.Point) *GraphNodeWidget {
+func findNodeUnderCursor[nodeDatatype any](mouse image.Point, nodes []*GraphNodeWidget[nodeDatatype], nodeSize image.Point, offset image.Point) *GraphNodeWidget[nodeDatatype] {
 	for _, node := range nodes {
 		if isPointInRect(mouse, node.position.Add(offset), node.position.Add(offset).Add(nodeSize)) {
 			return node
@@ -26,27 +26,28 @@ func findNodeUnderCursor(mouse image.Point, nodes []*GraphNodeWidget, nodeSize i
 	return nil
 }
 
-type GraphNodeWidget struct {
+type GraphNodeWidget[nodeDatatype any] struct {
 	id              string
 	position        image.Point
-	associatedEdges map[string]*GraphEdge
+	associatedEdges map[string]*GraphEdge[nodeDatatype]
 	color           color.Color
 	clicked         func()
 	doubleClicked   func()
+	value           nodeDatatype
 }
 
-func GraphNode(id string, position image.Point, color color.Color, clicked func(), doubleClicked func()) *GraphNodeWidget {
-	return &GraphNodeWidget{
+func GraphNode[nodeDatatype any](id string, position image.Point, color color.Color, clicked func(), doubleClicked func()) *GraphNodeWidget[nodeDatatype] {
+	return &GraphNodeWidget[nodeDatatype]{
 		id:              id,
 		position:        position,
-		associatedEdges: map[string]*GraphEdge{},
+		associatedEdges: map[string]*GraphEdge[nodeDatatype]{},
 		color:           color,
 		clicked:         clicked,
 		doubleClicked:   doubleClicked,
 	}
 }
 
-func (n *GraphNodeWidget) HasEdgeWith(target *GraphNodeWidget) *GraphEdge {
+func (n *GraphNodeWidget[T]) HasEdgeWith(target *GraphNodeWidget[T]) *GraphEdge[T] {
 	for _, edge := range n.associatedEdges {
 		if edge.from == target || edge.to == target {
 			return edge
@@ -56,7 +57,7 @@ func (n *GraphNodeWidget) HasEdgeWith(target *GraphNodeWidget) *GraphEdge {
 	return nil
 }
 
-func (n *GraphNodeWidget) HasEdgeTo(target *GraphNodeWidget) *GraphEdge {
+func (n *GraphNodeWidget[T]) HasEdgeTo(target *GraphNodeWidget[T]) *GraphEdge[T] {
 	for _, edge := range n.associatedEdges {
 		if edge.to == target {
 			return edge
@@ -66,32 +67,32 @@ func (n *GraphNodeWidget) HasEdgeTo(target *GraphNodeWidget) *GraphEdge {
 	return nil
 }
 
-type GraphEdge struct {
+type GraphEdge[nodeDatatype any] struct {
 	id   string
-	from *GraphNodeWidget
-	to   *GraphNodeWidget
+	from *GraphNodeWidget[nodeDatatype]
+	to   *GraphNodeWidget[nodeDatatype]
 }
 
-type DraggableGraphWidget struct {
+type DraggableGraphWidget[nodeDataype any] struct {
 	id                   string
 	offset               image.Point
 	dragging             bool
 	dragModeEdge         bool
-	draggingTarget       *GraphNodeWidget
+	draggingTarget       *GraphNodeWidget[nodeDataype]
 	panning              bool
 	lastMousePosition    image.Point
 	offsetChanged        func(image.Point)
-	nodes                map[string]*GraphNodeWidget
-	activeNode           *GraphNodeWidget
-	nodePriorities       []*GraphNodeWidget
-	nodeCreationFunction func(*DraggableGraphWidget)
-	edges                map[string]*GraphEdge
-	edgeCreationFunction func(*DraggableGraphWidget, string, string)
+	nodes                map[string]*GraphNodeWidget[nodeDataype]
+	activeNode           *GraphNodeWidget[nodeDataype]
+	nodePriorities       []*GraphNodeWidget[nodeDataype]
+	nodeCreationFunction func()
+	edges                map[string]*GraphEdge[nodeDataype]
+	edgeCreationFunction func(string, string)
 	zoom                 float32
 }
 
-func DraggableGraph(id string, offsetChanged func(image.Point), nodeCreationMenu func(*DraggableGraphWidget), edgeCreationMenu func(*DraggableGraphWidget, string, string)) *DraggableGraphWidget {
-	return &DraggableGraphWidget{
+func DraggableGraph[nodeDatatype any](id string, offsetChanged func(image.Point), nodeCreationMenu func(), edgeCreationMenu func(string, string)) *DraggableGraphWidget[nodeDatatype] {
+	return &DraggableGraphWidget[nodeDatatype]{
 		id: id,
 		offset: image.Point{
 			X: 0,
@@ -101,23 +102,23 @@ func DraggableGraph(id string, offsetChanged func(image.Point), nodeCreationMenu
 		dragging:             false,
 		dragModeEdge:         false,
 		offsetChanged:        offsetChanged,
-		nodes:                map[string]*GraphNodeWidget{},
+		nodes:                map[string]*GraphNodeWidget[nodeDatatype]{},
 		nodeCreationFunction: nodeCreationMenu,
-		edges:                map[string]*GraphEdge{},
+		edges:                map[string]*GraphEdge[nodeDatatype]{},
 		edgeCreationFunction: edgeCreationMenu,
 		zoom:                 1.0,
 	}
 }
 
-func (w *DraggableGraphWidget) GetOffset() image.Point {
+func (w *DraggableGraphWidget[T]) GetOffset() image.Point {
 	return w.offset
 }
 
-func (w *DraggableGraphWidget) CreateNode(id string, position image.Point, nodeColor color.Color, clicked func(), doubleClicked func()) {
-	w.nodes[id] = GraphNode(id, position, nodeColor, clicked, doubleClicked)
+func (w *DraggableGraphWidget[T]) CreateNode(id string, position image.Point, nodeColor color.Color, clicked func(), doubleClicked func()) {
+	w.nodes[id] = GraphNode[T](id, position, nodeColor, clicked, doubleClicked)
 }
 
-func (w *DraggableGraphWidget) DestroyNode(id string) {
+func (w *DraggableGraphWidget[T]) DestroyNode(id string) {
 	for _, edge := range w.nodes[id].associatedEdges {
 		w.DestroyEdge(edge.id)
 	}
@@ -129,8 +130,8 @@ func (w *DraggableGraphWidget) DestroyNode(id string) {
 	delete(w.nodes, id)
 }
 
-func (w *DraggableGraphWidget) CreateEdge(id string, fromId string, toId string) {
-	w.edges[id] = &GraphEdge{
+func (w *DraggableGraphWidget[T]) CreateEdge(id string, fromId string, toId string) {
+	w.edges[id] = &GraphEdge[T]{
 		id:   id,
 		from: w.nodes[fromId],
 		to:   w.nodes[toId],
@@ -140,7 +141,7 @@ func (w *DraggableGraphWidget) CreateEdge(id string, fromId string, toId string)
 	w.nodes[toId].associatedEdges[id] = w.edges[id]
 }
 
-func (w *DraggableGraphWidget) DestroyEdge(id string) {
+func (w *DraggableGraphWidget[T]) DestroyEdge(id string) {
 	if w.edges[id].to != nil {
 		delete(w.edges[id].to.associatedEdges, id)
 	}
@@ -152,7 +153,7 @@ func (w *DraggableGraphWidget) DestroyEdge(id string) {
 	delete(w.edges, id)
 }
 
-func (w *DraggableGraphWidget) Build() {
+func (w *DraggableGraphWidget[T]) Build() {
 	// Create graph field
 	sizeX, sizeY := g.GetAvailableRegion()
 	if sizeX <= 0 || sizeY <= 0 {
@@ -197,7 +198,7 @@ func (w *DraggableGraphWidget) Build() {
 	}
 
 	if g.IsWindowFocused(g.FocusedFlags(g.FocusedFlagsNone)) && g.IsKeyPressed(g.KeyN) {
-		w.nodeCreationFunction(w)
+		w.nodeCreationFunction()
 	}
 
 	/// Node inputs
@@ -226,7 +227,7 @@ func (w *DraggableGraphWidget) Build() {
 				if edgeToTarget != nil {
 					w.DestroyEdge(edgeToTarget.id)
 				} else {
-					w.edgeCreationFunction(w, w.draggingTarget.id, edgeTarget.id)
+					w.edgeCreationFunction(w.draggingTarget.id, edgeTarget.id)
 					// TODO: Retain a temporary line for drawing
 				}
 			}
@@ -276,7 +277,7 @@ func (w *DraggableGraphWidget) Build() {
 	}
 
 	/// Draw nodes
-	newNodePriorities := []*GraphNodeWidget{} // We really should be using a stack here.
+	newNodePriorities := []*GraphNodeWidget[T]{} // We really should be using a stack here.
 
 	for _, node := range w.nodes {
 		nodeRelativePosition := node.position.Add(windowPosition).Add(w.offset)

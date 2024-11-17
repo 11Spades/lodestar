@@ -42,11 +42,11 @@ type EdgeCreationWindowData struct {
 
 // Globals
 // TODO: Use channels to share these across goroutines or something. This is bad.
-var roomGraph *w.DraggableGraphWidget
+var roomGraph *w.DraggableGraphWidget[Room]
 var nodeCreationDialogues []*NodeCreationWindowData // TODO: Polymorphism so that we don't need 80000 arrays
 var edgeCreationDialogues []*EdgeCreationWindowData
 
-func nodeCreationMenu(graph *w.DraggableGraphWidget) {
+func nodeCreationMenu() {
 	newNodeCreationDialogue := NodeCreationWindowData{
 		Color: color.RGBA{R: 255, G: 255, B: 255, A: 255},
 	}
@@ -80,7 +80,7 @@ func renderNodeCreationMenu(window *g.WindowWidget, windowData *NodeCreationWind
 	)
 }
 
-func edgeCreationMenu(graph *w.DraggableGraphWidget, from string, to string) {
+func edgeCreationMenu(from string, to string) {
 	newEdgeCreationDialogue := EdgeCreationWindowData{
 		Id:            "",
 		DirectionName: "",
@@ -93,7 +93,7 @@ func edgeCreationMenu(graph *w.DraggableGraphWidget, from string, to string) {
 	g.Update()
 }
 
-func renderEdgeCreationMenu(window *g.WindowWidget, windowData *EdgeCreationWindowData, windowDataIndex int, graph *w.DraggableGraphWidget, update *bool) {
+func renderEdgeCreationMenu(window *g.WindowWidget, windowData *EdgeCreationWindowData, windowDataIndex int, update *bool) {
 	window.Layout(
 		g.Column(
 			g.Label("From: "+windowData.From),
@@ -147,7 +147,7 @@ func mainLoop() {
 		window := g.Window(windowData.From + " -> " + windowData.To)
 		window.Size(vX/5, vY/3)
 		window.Pos(oX+vX/2-vX/10, oY+vY/2-vY/6)
-		renderEdgeCreationMenu(window, windowData, i, roomGraph, &manualUpdateNeeded)
+		renderEdgeCreationMenu(window, windowData, i, &manualUpdateNeeded)
 	}
 
 	//// Node creation dialogue rendering
@@ -181,7 +181,7 @@ func main() {
 	mainPane.SetBgColor(color.Transparent)
 
 	// State-retained widgets
-	roomGraph = w.DraggableGraph("room_graph", dragged, nodeCreationMenu, edgeCreationMenu)
+	roomGraph = w.DraggableGraph[Room]("room_graph", dragged, nodeCreationMenu, edgeCreationMenu)
 
 	// GO! GO! GO! //
 	mainPane.Run(mainLoop)
