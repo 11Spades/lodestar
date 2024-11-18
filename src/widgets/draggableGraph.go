@@ -153,6 +153,14 @@ func (w *DraggableGraphWidget[T]) DestroyEdge(id string) {
 	delete(w.edges, id)
 }
 
+func (w *DraggableGraphWidget[T]) GetActiveNodeId() string {
+	return w.activeNode.id
+}
+
+func (w *DraggableGraphWidget[T]) GetNodeValue(nodeId string) *T {
+	return &w.nodes[nodeId].value
+}
+
 func (w *DraggableGraphWidget[T]) Build() {
 	// Create graph field
 	sizeX, sizeY := g.GetAvailableRegion()
